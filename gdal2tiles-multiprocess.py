@@ -82,7 +82,7 @@ Global Map Tiles as defined in Tile Map Service (TMS) Profiles
 Functions necessary for generation of global tiles used on the web.
 It contains classes implementing coordinate conversions for:
 
-  - GlobalMercator (based on EPSG:900913 = EPSG:3785)
+  - GlobalMercator (based on EPSG:3785 = EPSG:3785)
        for Google Maps, Yahoo Maps, Microsoft Maps compatible tiles
   - GlobalGeodetic (based on EPSG:4326)
        for OpenLayers Base Map and Google Earth compatible tiles
@@ -113,7 +113,7 @@ class GlobalMercator(object):
 	---------------------------
 
 	Functions necessary for generation of tiles in Spherical Mercator projection,
-	EPSG:900913 (EPSG:gOOglE, Google Maps Global Mercator), EPSG:3785, OSGEO:41001.
+	EPSG:3785 (EPSG:gOOglE, Google Maps Global Mercator), EPSG:3785, OSGEO:41001.
 
 	Such tiles are compatible with Google Maps, Microsoft Virtual Earth, Yahoo Maps,
 	UK Ordnance Survey OpenSpace API, ...
@@ -127,23 +127,23 @@ class GlobalMercator(object):
 
 	 WGS84 coordinates   Spherical Mercator  Pixels in pyramid  Tiles in pyramid
 	     lat/lon            XY in metres     XY pixels Z zoom      XYZ from TMS 
-	    EPSG:4326           EPSG:900913                                         
+	    EPSG:4326           EPSG:3785                                         
 	     .----.              ---------               --                TMS      
 	    /      \     <->     |       |     <->     /----/    <->      Google    
 	    \      /             |       |           /--------/          QuadTree   
 	     -----               ---------         /------------/                   
 	   KML, public         WebMapService         Web Clients      TileMapService
 
-	What is the coordinate extent of Earth in EPSG:900913?
+	What is the coordinate extent of Earth in EPSG:3785?
 
 	  [-20037508.342789244, -20037508.342789244, 20037508.342789244, 20037508.342789244]
 	  Constant 20037508.342789244 comes from the circumference of the Earth in meters,
 	  which is 40 thousand kilometers, the coordinate origin is in the middle of extent.
       In fact you can calculate the constant as: 2 * math.pi * 6378137 / 2.0
-	  $ echo 180 85 | gdaltransform -s_srs EPSG:4326 -t_srs EPSG:900913
+	  $ echo 180 85 | gdaltransform -s_srs EPSG:4326 -t_srs EPSG:3785
 	  Polar areas with abs(latitude) bigger then 85.05112878 are clipped off.
 
-	What are zoom level constants (pixels/meter) for pyramid with EPSG:900913?
+	What are zoom level constants (pixels/meter) for pyramid with EPSG:3785?
 
 	  whole region is on top of pyramid (zoom=0) covered by 256x256 pixels tile,
 	  every lower zoom level resolution is always divided by two
@@ -172,10 +172,10 @@ class GlobalMercator(object):
 	  of an ellipsoidal projection. The spherical projection causes approximately
 	  0.33 percent scale distortion in the Y direction, which is not visually noticable.
 
-	How do I create a raster in EPSG:900913 and convert coordinates with PROJ.4?
+	How do I create a raster in EPSG:3785 and convert coordinates with PROJ.4?
 
 	  You can use standard GIS tools like gdalwarp, cs2cs or gdaltransform.
-	  All of the tools supports -t_srs 'epsg:900913'.
+	  All of the tools supports -t_srs 'epsg:3785'.
 
 	  For other GIS programs check the exact definition of the projection:
 	  More info at http://spatialreference.org/ref/user/google-projection/
@@ -186,7 +186,7 @@ class GlobalMercator(object):
 	    +proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0
 	    +k=1.0 +units=m +nadgrids=@null +no_defs
 
-	  Human readable WKT format of EPGS:900913:
+	  Human readable WKT format of EPGS:3785:
 	     PROJCS["Google Maps Global Mercator",
 	         GEOGCS["WGS 84",
 	             DATUM["WGS_1984",
@@ -214,7 +214,7 @@ class GlobalMercator(object):
 		# 20037508.342789244
 
 	def LatLonToMeters(self, lat, lon ):
-		"Converts given lat/lon in WGS84 Datum to XY in Spherical Mercator EPSG:900913"
+		"Converts given lat/lon in WGS84 Datum to XY in Spherical Mercator EPSG:3785"
 
 		mx = lon * self.originShift / 180.0
 		my = math.log( math.tan((90 + lat) * math.pi / 360.0 )) / (math.pi / 180.0)
@@ -223,7 +223,7 @@ class GlobalMercator(object):
 		return mx, my
 
 	def MetersToLatLon(self, mx, my ):
-		"Converts XY point from Spherical Mercator EPSG:900913 to lat/lon in WGS84 Datum"
+		"Converts XY point from Spherical Mercator EPSG:3785 to lat/lon in WGS84 Datum"
 
 		lon = (mx / self.originShift) * 180.0
 		lat = (my / self.originShift) * 180.0
@@ -232,7 +232,7 @@ class GlobalMercator(object):
 		return lat, lon
 
 	def PixelsToMeters(self, px, py, zoom):
-		"Converts pixel coordinates in given zoom level of pyramid to EPSG:900913"
+		"Converts pixel coordinates in given zoom level of pyramid to EPSG:3785"
 
 		res = self.Resolution( zoom )
 		mx = px * res - self.originShift
@@ -240,7 +240,7 @@ class GlobalMercator(object):
 		return mx, my
 		
 	def MetersToPixels(self, mx, my, zoom):
-		"Converts EPSG:900913 to pyramid pixel coordinates in given zoom level"
+		"Converts EPSG:3785 to pyramid pixel coordinates in given zoom level"
 				
 		res = self.Resolution( zoom )
 		px = (mx + self.originShift) / res
@@ -267,7 +267,7 @@ class GlobalMercator(object):
 		return self.PixelsToTile( px, py)
 
 	def TileBounds(self, tx, ty, zoom):
-		"Returns bounds of the given tile in EPSG:900913 coordinates"
+		"Returns bounds of the given tile in EPSG:3785 coordinates"
 		
 		minx, miny = self.PixelsToMeters( tx*self.tileSize, ty*self.tileSize, zoom )
 		maxx, maxy = self.PixelsToMeters( (tx+1)*self.tileSize, (ty+1)*self.tileSize, zoom )
@@ -659,6 +659,8 @@ gdal_vrtmerge.py -o merged.vrt %s""" % " ".join(self.args))
 						  help="Resume mode. Generate only missing files.")
 		p.add_option('-a', '--srcnodata', dest="srcnodata", metavar="NODATA",
 			  			  help="NODATA transparency value to assign to the input data")
+		p.add_option("-ns", "--nonstandard", dest="nonstandard",
+			  			  help="Non-standard tile naming, starting from top-left instead of bottom-left (OGC TMS Standard)")
 		p.add_option("-l", "--leaflet",
                           action="store_true", dest="leaflet",
                           help="Set 0,0 point to north. For use with 'leaflet'. Requires -p raster. ")
@@ -798,7 +800,7 @@ gdal2tiles temp.vrt""" % self.input )
 		self.out_srs = osr.SpatialReference()
 
 		if self.options.profile == 'mercator':
-			self.out_srs.ImportFromEPSG(900913)
+			self.out_srs.ImportFromEPSG(3785)
 		elif self.options.profile == 'geodetic':
 			self.out_srs.ImportFromEPSG(4326)
 		else:
@@ -1201,7 +1203,11 @@ gdal2tiles temp.vrt""" % self.input )
 				ti += 1
 				if (ti - 1) % self.options.processes != cpu:
 					continue
-				tilefilename = os.path.join(self.output, str(tz), str(tx), "%s.%s" % (ty, self.tileext))
+
+				yname = ty
+				if self.options.nonstandard:
+					yname = (2**tz - 1) - ty
+				tilefilename = os.path.join(self.output, str(tz), str(tx), "%s.%s" % (yname, self.tileext))
 				if self.options.verbose:
 					print(ti,'/',tcount, tilefilename) #, "( TileMapService: z / x / y )"
 
@@ -1217,7 +1223,7 @@ gdal2tiles temp.vrt""" % self.input )
 					os.makedirs(os.path.dirname(tilefilename))
 
 				if self.options.profile == 'mercator':
-					# Tile bounds in EPSG:900913
+					# Tile bounds in EPSG:3785
 					b = self.mercator.TileBounds(tx, ty, tz)
 				elif self.options.profile == 'geodetic':
 					b = self.geodetic.TileBounds(tx, ty, tz)
@@ -1227,7 +1233,7 @@ gdal2tiles temp.vrt""" % self.input )
 				# Don't scale up by nearest neighbour, better change the querysize
 				# to the native resolution (and return smaller query tile) for scaling
 
-				if self.options.profile in ('mercator','geodetic'):
+				if self.options.profile in ('mercator','geodetic')3785:
 					rb, wb = self.geo_query( ds, b[0], b[3], b[2], b[1])
 					nativesize = wb[0]+wb[2] # Pixel size in the raster covering query geo extent
 					if self.options.verbose:
@@ -1353,7 +1359,11 @@ gdal2tiles temp.vrt""" % self.input )
 				ti += 1
 				if (ti - 1) % self.options.processes != cpu:
 					continue
-				tilefilename = os.path.join( self.output, str(tz), str(tx), "%s.%s" % (ty, self.tileext) )
+
+				yname = ty
+				if self.options.nonstandard:
+					yname = (2**tz - 1) - ty
+				tilefilename = os.path.join( self.output, str(tz), str(tx), "%s.%s" % (yname, self.tileext) )
 
 				if self.options.verbose:
 					print(ti,'/',tcount, tilefilename) #, "( TileMapService: z / x / y )"
@@ -1386,7 +1396,11 @@ gdal2tiles temp.vrt""" % self.input )
 
 						minx, miny, maxx, maxy = self.tminmax[tz+1]
 						if x >= minx and x <= maxx and y >= miny and y <= maxy:
-							dsquerytile = gdal.Open( os.path.join( self.output, str(tz+1), str(x), "%s.%s" % (y, self.tileext)), gdal.GA_ReadOnly)
+							yname = y
+							if self.options.nonstandard:
+								yname = (2**(tz+1) - 1) - y
+
+							dsquerytile = gdal.Open( os.path.join( self.output, str(tz+1), str(x), "%s.%s" % (yname, self.tileext)), gdal.GA_ReadOnly)
 
 							if self.options.leaflet:
 								if ty:
@@ -1536,7 +1550,7 @@ gdal2tiles temp.vrt""" % self.input )
 		args['profile'] = self.options.profile
 		
 		if self.options.profile == 'mercator':
-			args['srs'] = "EPSG:900913"
+			args['srs'] = "EPSG:3785"
 		elif self.options.profile == 'geodetic':
 			args['srs'] = "EPSG:4326"
 		elif self.options.s_srs:
@@ -2044,7 +2058,7 @@ gdal2tiles temp.vrt""" % self.input )
 			s += """
 	            var options = {
 	                controls: [],
-	                projection: new OpenLayers.Projection("EPSG:900913"),
+	                projection: new OpenLayers.Projection("EPSG:3785"),
 	                displayProjection: new OpenLayers.Projection("EPSG:4326"),
 	                units: "m",
 	                maxResolution: 156543.0339,
@@ -2085,7 +2099,7 @@ gdal2tiles temp.vrt""" % self.input )
 	                "http://tile.openstreetmap.org/",
 	                { type: 'png', getURL: osm_getTileURL, displayOutsideMaxExtent: true, attribution: '<a href="http://www.openstreetmap.org/">OpenStreetMap</a>'} );
 	            var oam = new OpenLayers.Layer.TMS( "OpenAerialMap",
-	                "http://tile.openaerialmap.org/tiles/1.0.0/openaerialmap-900913/",
+	                "http://tile.openaerialmap.org/tiles/1.0.0/openaerialmap-3785/",
 	                { type: 'png', getURL: osm_getTileURL } );
 
 	            // create TMS Overlay layer
@@ -2339,8 +2353,3 @@ if __name__=='__main__':
 				except:
 					pass
 			pool.join()
-
-
-#############
-# vim:noet
-#############
